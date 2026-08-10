@@ -1,0 +1,13 @@
+services:
+  protonmail-bridge:
+    build: .
+    container_name: protonmail-bridge
+    volumes:
+      - protonmail_data:/root
+    ports:
+      - "143:143"
+      - "25:25"
+    restart: unless-stopped
+
+volumes:
+  protonmail_data:
