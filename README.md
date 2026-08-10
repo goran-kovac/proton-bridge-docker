@@ -100,6 +100,13 @@ No extra secrets needed - it authenticates with the repo's built-in `GITHUB_TOKE
 
 Check [proton.me/download/bridge/stable_releases.html](https://proton.me/download/bridge/stable_releases.html) for the latest version. Bridge also silently self-updates at runtime; pinning `BRIDGE_VERSION` close to the latest release avoids the self-update pulling in a binary that needs a shared library not present in the image (see Troubleshooting).
 
+### Staying up to date
+
+Two things can go stale here, and they're kept current differently:
+
+- **GitHub Actions and the Debian base image** - handled by [Dependabot](.github/dependabot.yml), which opens PRs weekly when `actions/checkout`, `docker/build-push-action`, etc. or `debian:bookworm-slim` get updates.
+- **`BRIDGE_VERSION`** - not a registry tag, so Dependabot can't see it. `.github/workflows/check-bridge-version.yml` checks Proton's release notes weekly and opens a PR bumping it when a new stable version is out. Review these PRs before merging - a new Bridge version can add runtime dependencies the Dockerfile doesn't have yet (that's exactly what happened with `libfido2` in 3.22.0).
+
 ## Security notes
 
 - Don't expose ports 143/25 publicly - only bind them within a trusted internal network or via `127.0.0.1`/an internal Docker network, e.g. through a reverse proxy or VPN if remote access is needed.

@@ -1,0 +1,60 @@
+name: Check for new Bridge release
+
+# Dependabot can bump the GitHub Actions and the Debian base image, but it has
+# no way to know about new Proton Bridge releases - BRIDGE_VERSION in the
+# Dockerfile points at a plain download link, not a registry tag. This
+# workflow checks Proton's release notes weekly and opens a PR bumping
+# BRIDGE_VERSION when a newer stable version is found.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday
+  workflow_dispatch:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Determine current and latest version
+        id: versions
+        run: |
+          current=$(grep -oP '(?<=ARG BRIDGE_VERSION=)\S+' Dockerfile)
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+
+          latest=$(curl -sL https://proton.me/download/bridge/stable_releases.html \
+            | grep -oP '(?<=>)v[0-9]+\.[0-9]+\.[0-9]+(?=<)' \
+            | head -n1 \
+            | sed 's/^v//')
+
+          if [ -z "$latest" ]; then
+            echo "Could not determine latest Bridge version from release notes page." >&2
+            exit 1
+          fi
+
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "Current: $current / Latest: $latest"
+
+      - name: Bump BRIDGE_VERSION in Dockerfile
+        if: steps.versions.outputs.current != steps.versions.outputs.latest
+        run: |
+          sed -i "s/ARG BRIDGE_VERSION=.*/ARG BRIDGE_VERSION=${{ steps.versions.outputs.latest }}/" Dockerfile
+
+      - name: Open pull request
+        if: steps.versions.outputs.current != steps.versions.outputs.latest
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Bump Proton Bridge to ${{ steps.versions.outputs.latest }}"
+          title: "Bump Proton Bridge to ${{ steps.versions.outputs.latest }}"
+          body: |
+            Proton released Bridge ${{ steps.versions.outputs.latest }} (current: ${{ steps.versions.outputs.current }}).
+
+            See the [release notes](https://proton.me/download/bridge/stable_releases.html) before merging - check whether new runtime dependencies were added (e.g. `libfido2` was added in 3.22.0 and needed a Dockerfile change).
+          branch: bump-bridge-version
+          labels: dependencies

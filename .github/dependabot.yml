@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Keep the GitHub Actions used in workflows up to date
+  # (this is what caught the Node 20 -> Node 24 deprecation)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Keep the Debian base image up to date (security patches within bookworm-slim)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
