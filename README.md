@@ -107,6 +107,11 @@ Two things can go stale here, and they're kept current differently:
 - **GitHub Actions and the Debian base image** - handled by [Dependabot](.github/dependabot.yml), which opens PRs weekly when `actions/checkout`, `docker/build-push-action`, etc. or `debian:bookworm-slim` get updates.
 - **`BRIDGE_VERSION`** - not a registry tag, so Dependabot can't see it. `.github/workflows/check-bridge-version.yml` checks Proton's release notes weekly and opens a PR bumping it when a new stable version is out. Review these PRs before merging - a new Bridge version can add runtime dependencies the Dockerfile doesn't have yet (that's exactly what happened with `libfido2` in 3.22.0).
 
+### Security hardening in CI
+
+- **Image vulnerability scanning.** After every build, [Trivy](https://github.com/aquasecurity/trivy) scans the pushed image for known CVEs (CRITICAL/HIGH) in the Debian base and installed packages. Results show up under the repo's **Security → Code scanning** tab rather than failing the build - flip `exit-code` in `docker-publish.yml` to a non-zero value if you'd rather have the build fail on findings.
+- **Actions pinned to commit SHA.** All third-party GitHub Actions (`actions/checkout`, `docker/*`, `peter-evans/create-pull-request`, `aquasecurity/trivy-action`, `github/codeql-action`) are pinned to a full commit SHA rather than a floating tag like `@v7`, with the version as a trailing comment. This is the [supply-chain hardening GitHub itself recommends](https://docs.github.com/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) - a tag can be moved, a SHA can't. Dependabot still tracks and updates these SHAs automatically when a new version is released.
+
 ## Security notes
 
 - Don't expose ports 143/25 publicly - only bind them within a trusted internal network or via `127.0.0.1`/an internal Docker network, e.g. through a reverse proxy or VPN if remote access is needed.
