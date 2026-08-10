@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
     tags: ["v*.*.*"]
+  schedule:
+    # Rebuilds weekly even without a code change, so newly available Debian
+    # security patches for unchanged packages get picked up automatically.
+    - cron: "0 5 * * 1"
   workflow_dispatch:
 
 env:
@@ -61,9 +65,13 @@ jobs:
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
+          # Only report CVEs that Debian/upstream actually has a fix for.
+          # Otherwise a lot of noise shows up for CVEs bundled deep in
+          # transitive deps (e.g. via dbus-x11 or the Bridge .deb itself)
+          # that nobody can currently patch anyway.
+          ignore-unfixed: true
           # Report findings in the Security tab instead of failing the build -
-          # some CVEs in the Debian base or the Bridge .deb may not have a fix
-          # available yet. Flip to a non-zero value to fail the build instead.
+          # flip to a non-zero value to fail the build on findings instead.
           exit-code: "0"
 
       - name: Upload scan results to the Security tab
