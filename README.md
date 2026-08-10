@@ -20,11 +20,21 @@ Bridge exposes your Proton Mail account as a standard IMAP/SMTP mailbox, so any 
 
 ## Quick start
 
-### 1. Build the image
+### 1. Get the image
+
+Either use the prebuilt image, published automatically by GitHub Actions on every push to `main` and on version tags:
+
+```bash
+docker pull ghcr.io/goran-kovac/proton-bridge-docker:latest
+```
+
+...or build it yourself:
 
 ```bash
 docker compose build
 ```
+
+`docker-compose.yml` builds locally by default (`build: .`). To use the prebuilt image instead, replace `build: .` with `image: ghcr.io/goran-kovac/proton-bridge-docker:latest`.
 
 ### 2. One-time interactive login
 
@@ -76,6 +86,15 @@ Bridge's internal default ports are `1143` (IMAP) and `1025` (SMTP), forwarded b
 docker compose build
 docker compose up -d
 ```
+
+### CI: building and publishing the image
+
+`.github/workflows/docker-publish.yml` builds and pushes the image to GHCR (`ghcr.io/goran-kovac/proton-bridge-docker`) automatically:
+
+- every push to `main` → tagged `latest`
+- every tag matching `v*.*.*` (e.g. `v1.0.0`) → tagged with that version plus `1.0`
+
+No extra secrets needed - it authenticates with the repo's built-in `GITHUB_TOKEN`. After the first run, make the package public under the repo's **Packages** tab if you want anyone to `docker pull` it without logging in.
 
 Check [proton.me/download/bridge/stable_releases.html](https://proton.me/download/bridge/stable_releases.html) for the latest version. Bridge also silently self-updates at runtime; pinning `BRIDGE_VERSION` close to the latest release avoids the self-update pulling in a binary that needs a shared library not present in the image (see Troubleshooting).
 
