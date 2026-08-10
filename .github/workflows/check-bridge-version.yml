@@ -48,7 +48,7 @@ jobs:
 
       - name: Open pull request
         if: steps.versions.outputs.current != steps.versions.outputs.latest
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "Bump Proton Bridge to ${{ steps.versions.outputs.latest }}"
           title: "Bump Proton Bridge to ${{ steps.versions.outputs.latest }}"
