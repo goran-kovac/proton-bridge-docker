@@ -128,6 +128,10 @@ Make sure you rebuilt the image after changing the Dockerfile - `docker compose 
 - No health check yet.
 - The `.deb` install occasionally needs an extra dependency added to the Dockerfile if Proton changes what the package requires - if the build fails, check the log for the missing package.
 
+## AI disclosure
+
+Large parts of this project - the Dockerfile, entrypoint script, CI workflow, and this README - were written with the help of an AI coding assistant (Claude), based on my own debugging of real errors from running Bridge in a container. I reviewed and tested the changes, but treat this as a community project maintained with AI assistance, not hand-crafted line by line. Issues and corrections are very welcome.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
