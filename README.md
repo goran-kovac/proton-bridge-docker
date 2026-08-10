@@ -1,5 +1,7 @@
 # proton-bridge-docker
 
+[![Build and publish Docker image](https://github.com/goran-kovac/proton-bridge-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/goran-kovac/proton-bridge-docker/actions/workflows/docker-publish.yml)
+
 A minimal, self-contained Docker image for [Proton Mail Bridge](https://proton.me/mail/bridge), built directly from Proton's official signed `.deb` package instead of relying on the maintenance of a community wrapper.
 
 Bridge exposes your Proton Mail account as a standard IMAP/SMTP mailbox, so any regular email client (Outlook, Thunderbird, Apple Mail, generic IMAP tools, ...) can connect to it - no Proton-specific plugin required.
