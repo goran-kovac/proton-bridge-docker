@@ -44,4 +44,14 @@ VOLUME ["/root"]
 # Bridge only binds internally to 127.0.0.1 - see entrypoint.sh (socat forwarding)
 EXPOSE 143 25
 
+# Liveness only: confirms the socat-forwarded IMAP and SMTP ports accept
+# connections, i.e. the entrypoint's normal (non-"init") startup finished and
+# both services are up. This does NOT confirm an account is logged in or
+# syncing - Bridge doesn't expose that without either a second CLI instance
+# (which conflicts with the running one's lock file) or its internal gRPC
+# channel. Query login/sync status separately, e.g. via an IMAP login using
+# the Bridge-generated credentials, if you need that signal too.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD bash -c '(echo > /dev/tcp/127.0.0.1/143) 2>/dev/null && (echo > /dev/tcp/127.0.0.1/25) 2>/dev/null' || exit 1
+
 ENTRYPOINT ["/entrypoint.sh"]

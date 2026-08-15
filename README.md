@@ -136,10 +136,22 @@ You tried to run a second Bridge process (e.g. via `docker exec` into the alread
 **Login/`init` won't start**
 Make sure you rebuilt the image after changing the Dockerfile - `docker compose run` does not rebuild automatically.
 
+## Health check
+
+The image has a `HEALTHCHECK` that confirms the socat-forwarded IMAP (143) and SMTP (25) ports accept connections - i.e. the container finished normal startup and both services are listening. Check it with:
+
+```bash
+docker inspect --format='{{.State.Health.Status}}' protonmail-bridge
+```
+
+or from Ansible via [`community.docker.docker_container_info`](https://docs.ansible.com/ansible/latest/collections/community/docker/docker_container_info_module.html), reading `.State.Health.Status` off the result.
+
+This only proves the process is alive and serving - it does **not** confirm an account is actually logged in and syncing. Bridge doesn't expose that without either starting a second CLI instance (which conflicts with the running one's lock file, see above) or reverse-engineering its internal gRPC channel, neither of which seemed worth the fragility. If you need that signal too, the most reliable option is a real IMAP login from whatever's consuming the mailbox, using the Bridge-generated credentials from `info`.
+
 ## Known limitations
 
 - Only tested on `linux/amd64`.
-- No health check yet.
+- The health check confirms the ports are up, not that an account is logged in/syncing (see above).
 - The `.deb` install occasionally needs an extra dependency added to the Dockerfile if Proton changes what the package requires - if the build fails, check the log for the missing package.
 
 ## AI disclosure
