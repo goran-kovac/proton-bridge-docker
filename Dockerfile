@@ -10,7 +10,7 @@
 # out of the final image (also keeps its own CVEs out of image scans).
 FROM debian:bookworm-slim AS fetch
 
-ARG BRIDGE_VERSION=3.25.0
+ARG BRIDGE_VERSION=3.26.0
 ARG BRIDGE_DEB=protonmail-bridge_${BRIDGE_VERSION}-1_amd64.deb
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
